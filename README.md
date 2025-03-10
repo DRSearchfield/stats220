@@ -12,7 +12,9 @@
 * I own three horses and two dogs
 * I'm passionate about photography
 * Reading is one of my favourite passtimes
-* I love animals of all kinds and have often raised orphan goats/lambs
+* I'm in my third year of univeristy
 * A website I often use is [HorseTelex](https://www.horsetelex.com/home)
 
-A meme that captures how I currently feel about my university studies is ![](https://c.tenor.com/8druEACXtX8AAAAd/tenor.gif)
+How I'm currently feeling about univeristy:
+
+![](https://media1.tenor.com/m/tD3I5gFLFGsAAAAC/ross-geller-david-schwimmer.gif)
