@@ -1,0 +1,237 @@
+---
+title: My dynamic report
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+
+```
+
+```{css}
+body{
+color: #014636;
+background-color: #ECE2F0;
+padding:10px;
+font-family: 'Merriweather'
+}
+
+```
+
+## Bird Observations in the Auckland Region
+### Introduction
+
+New Zealand - including the Auckland Region - is home to many native and introduced bird species. Most of us interact with birds everyday without even realising their importance for the New Zealand ecosystem. I was interested in learning about birds across the Auckland Region so created a survey to try and understand their behaviours.
+
+### Survey Design and Data Analysis
+
+My survey had three sections and a total of nine questions. These questions were a combination of multiple choice - either select one, or select multiple - and short answer questions. The three sections - and their corresponding questions - in my survey were:
+
+1. **Location Information :**
+* Area observations occured
+* Time observations occured
+* Temperature
+* Length of observation
+
+2. **Bird Observations:**
+* Number of birds seen
+* Type of birds seen (e.g. Native/Introduced)
+
+3. **Native Bird Sightings: **
+* Number of native birds seen
+* Species of native birds
+
+Section 3 of the survey was only done if the respondent selected that they saw native birds.
+
+After the data selection occured I had both categorical and numeric variables. After exploring all of the variables I decided to focus my analysis on the number and types of birds observed. In my data sheet I had **numeric** variables for the *total number of birds* and *number of native birds*; using these variables I calculated how many of the birds were introduced species and created a new **numeric** variable for the *number of introduced birds*. From here I wanted to make bar charts displaying the number of reports for each number of birds, after creating some bar charts, I decided it would be better for these **numeric** variables to instead be a **categorical** intervals. Once I made new variables that created **categorcial** intervals of bird numbers for each of the three categories (total, native, introduced) I created bar charts for each of these.
+
+For the *total number of birds* bar chart, I filled the bars based on the Type of Birds (e.g. native, introduced, both) reported in order to see if the types of birds being seen differed with the number of birds being seen. 
+
+I also made a bar chart using the **categorical** variable *native bird species* to see what types of native birds were being reported, and how many people were reporting them. In this bar chart, the bars where filled by observation area to see if there were any differences between the number of reports of each species and the location at which they were seen. 
+
+Finally I calculated some summary statistics looking at:
+
+* The length of observation periods
+* The range of temperatures over which observations took place
+* Total bird numbers
+* Native bird numbers 
+* Introduced bird numbers
+
+### Results
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+#Reading in, and Renaming my data
+logged_data <- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQV1bDpXEGT2cOltc9VWx7RLWkMoJDZj0SWKBKutZacfwUO50kq-43seYj9AjrGGKhSbEcBIqkzlGb4/pub?output=csv")
+latest_data <- rename(logged_data, Observation_Area = 2,
+       Time_Period = 3,
+       Temperature = 4,
+       Observation_Length = 5,
+       Number_Birds = 6,
+       Type_Birds = 7,
+       Native_Bird_Number = 8,
+       Native_Bird_Type = 9)
+
+#Creating a data frame that has the native bird types separated and removing any blank cells.
+nativebird_seperated <- latest_data %>%
+  separate_rows(Native_Bird_Type, sep = ", ")
+
+nativebird_seperated_NA <- nativebird_seperated
+nativebird_seperated_NA[nativebird_seperated_NA == ""] <- NA 
+
+nativebird_Seperated_No.NA <- na.omit(nativebird_seperated_NA)
+
+#Changing numeric to categorical
+
+latest_data$Bird_Number_Cat <- ifelse(latest_data$Number_Birds >-1, "0-10", latest_data$Number_Birds)
+latest_data$Bird_Number_Cat <- ifelse(latest_data$Number_Birds >10, "11-20", latest_data$Bird_Number_Cat)
+latest_data$Bird_Number_Cat <- ifelse(latest_data$Number_Birds >20, "21-30", latest_data$Bird_Number_Cat)
+latest_data$Bird_Number_Cat <- ifelse(latest_data$Number_Birds >30, "31-40", latest_data$Bird_Number_Cat)
+latest_data$Bird_Number_Cat <- ifelse(latest_data$Number_Birds >40, "41-50", latest_data$Bird_Number_Cat)
+latest_data$Bird_Number_Cat <- ifelse(latest_data$Number_Birds >50, "51-60", latest_data$Bird_Number_Cat)
+latest_data$Bird_Number_Cat <- ifelse(latest_data$Number_Birds >60, "61-70", latest_data$Bird_Number_Cat)
+latest_data$Bird_Number_Cat <- ifelse(latest_data$Number_Birds >70, "71-80", latest_data$Bird_Number_Cat)
+latest_data$Bird_Number_Cat <- ifelse(latest_data$Number_Birds >80, ">80", latest_data$Bird_Number_Cat)
+
+# Replacing NA as 0
+latest_data$Native_Bird_Number<- replace_na(latest_data$Native_Bird_Number, 0)
+
+#changing num to cat
+latest_data$Native_Number_Cat <- ifelse(latest_data$Native_Bird_Number >-1, "0-10", latest_data$Native_Bird_Number)
+latest_data$Native_Number_Cat <- ifelse(latest_data$Native_Bird_Number >10, "11-20", latest_data$Native_Number_Cat)
+latest_data$Native_Number_Cat <- ifelse(latest_data$Native_Bird_Number >20, "21-30", latest_data$Native_Number_Cat)
+latest_data$Native_Number_Cat <- ifelse(latest_data$Native_Bird_Number >30, "31-40", latest_data$Native_Number_Cat)
+latest_data$Native_Number_Cat <- ifelse(latest_data$Native_Bird_Number >40, "41-50", latest_data$Native_Number_Cat)
+latest_data$Native_Number_Cat <- ifelse(latest_data$Native_Bird_Number >50, "51-60", latest_data$Native_Number_Cat)
+latest_data$Native_Number_Cat <- ifelse(latest_data$Native_Bird_Number >60, "61-70", latest_data$Native_Number_Cat)
+latest_data$Native_Number_Cat <- ifelse(latest_data$Native_Bird_Number >70, "71-80", latest_data$Native_Number_Cat)
+latest_data$Native_Number_Cat <- ifelse(latest_data$Native_Bird_Number >80, ">80", latest_data$Native_Number_Cat)
+
+#Making numeric variable for number of introduced birds. Then making a categorical variable for the same thing.
+latest_data$Introduced_Bird_Number <- (latest_data$Number_Birds - latest_data$Native_Bird_Number)
+
+latest_data$Introduced_Number_Cat <- ifelse(latest_data$Introduced_Bird_Number >-1, "0-10", latest_data$Introduced_Bird_Number)
+latest_data$Introduced_Number_Cat <- ifelse(latest_data$Introduced_Bird_Number >10, "11-20", latest_data$Introduced_Number_Cat)
+latest_data$Introduced_Number_Cat <- ifelse(latest_data$Introduced_Bird_Number >20, "21-30", latest_data$Introduced_Number_Cat)
+latest_data$Introduced_Number_Cat <- ifelse(latest_data$Introduced_Bird_Number >30, "31-40", latest_data$Introduced_Number_Cat)
+latest_data$Introduced_Number_Cat <- ifelse(latest_data$Introduced_Bird_Number >40, "41-50", latest_data$Introduced_Number_Cat)
+latest_data$Introduced_Number_Cat <- ifelse(latest_data$Introduced_Bird_Number >50, "51-60", latest_data$Introduced_Number_Cat)
+latest_data$Introduced_Number_Cat <- ifelse(latest_data$Introduced_Bird_Number >60, "61-70", latest_data$Introduced_Number_Cat)
+latest_data$Introduced_Number_Cat <- ifelse(latest_data$Introduced_Bird_Number >70, "71-80", latest_data$Introduced_Number_Cat)
+latest_data$Introduced_Number_Cat <- ifelse(latest_data$Introduced_Bird_Number >80, ">80", latest_data$Introduced_Number_Cat)
+
+
+mean_obs <- latest_data$Observation_Length %>%
+  mean() %>%
+  round(1)
+
+min_temp <- latest_data$Temperature %>%
+  min() %>%
+  round(1)
+
+max_temp <- latest_data$Temperature %>%
+  max() %>%
+  round(1)
+```
+
+The mean bird observation length was found to be `r mean_obs` minutes long. It was reported that the temperatures in which the observations took place ranged from `r min_temp` to  `r max_temp`.
+
+
+```{r}
+theme_update(plot.title = element_text(hjust = 0.5))
+
+latest_data%>%
+  ggplot +
+  scale_fill_brewer(palette = "PuBuGn", direction = -1)+
+  geom_bar(aes(x = Bird_Number_Cat,
+               fill = Type_Birds,)) +
+  labs(title = "Number of Reports that a Particular Number\n\ of Birds (total) were seen by Type of Bird",
+       x = "Number of Birds Seen",
+       y = "Number of Reports",
+       fill = "Type of Birds") 
+
+mean_No_Bird <- latest_data$Number_Birds %>%
+  mean() %>%
+  round(1)
+
+min_No_Bird <- latest_data$Number_Birds %>%
+  min() %>%
+  round(1)
+
+max_No_Bird <- latest_data$Number_Birds %>%
+  max() %>%
+  round(1)
+
+
+```
+
+The minimum number of total birds reported was `r min_No_Bird`, and the maximum was `r max_No_Bird` with a mean of `r mean_No_Bird`.
+
+```{r}
+
+latest_data%>%
+  ggplot +
+  geom_bar(aes(x = Introduced_Number_Cat), fill = "#3690c0")  +
+  labs(title = "Number of Reports that a Particular Number of Introduced Birds were seen",
+       x = "Number of Introduced Birds Seen",
+       y = "Number of Reports")
+
+mean_I_Bird <- latest_data$Introduced_Bird_Number %>%
+  mean() %>%
+  round(1)
+
+min_I_Bird <- latest_data$Introduced_Bird_Number %>%
+  min() %>%
+  round(1)
+
+max_I_Bird <- latest_data$Introduced_Bird_Number %>%
+  max() %>%
+  round(1)
+
+```
+
+The minimum number of total birds reported was `r min_I_Bird`, and the maximum was `r max_I_Bird` with a mean of `r mean_I_Bird`.
+
+```{r}
+
+
+latest_data%>%
+  ggplot +
+  geom_bar(aes(x = Native_Number_Cat), fill = "#016c59")  +
+  labs(title = "Number of Reports that a Particular Number of Native Birds were seen",
+       x = "Number of Native Birds Seen",
+       y = "Number of Reports")
+
+mean_N_Bird <- latest_data$Native_Bird_Number %>%
+  mean() %>%
+  round(1)
+
+min_N_Bird <- latest_data$Native_Bird_Number %>%
+  min() %>%
+  round(1)
+
+max_N_Bird <- latest_data$Native_Bird_Number %>%
+  max() %>%
+  round(1)
+
+
+```
+
+The minimum number of total birds reported was `r min_N_Bird`, and the maximum was `r max_N_Bird` with a mean of `r mean_N_Bird`.
+
+
+```{r}
+
+nativebird_Seperated_No.NA%>%
+  ggplot + 
+  scale_fill_brewer(palette = "PuBuGn", direction = -1)+
+  geom_bar(aes(x = Native_Bird_Type,
+               fill = Observation_Area)) +
+  labs(title = "Number of times Native Bird Species were Reported by Observation Area",
+       x = "Native Bird Species",
+       y = "Number of Reports",
+       fill = "Observation Area") +
+  theme(plot.title = element_text(hjust = 0))
+```
